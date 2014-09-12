@@ -18,6 +18,5 @@ public class Consumer implements Runnable {
     public void run() {
         System.out.println("Consumer Thread started.");
         buffer.consumer();
-
     }
 }

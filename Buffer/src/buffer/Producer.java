@@ -18,7 +18,6 @@ public class Producer implements Runnable {
     public void run() {
         System.out.println("Producer thread started.");
         buffer.producer();
-
     }
 
 }

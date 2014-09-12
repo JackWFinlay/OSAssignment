@@ -9,15 +9,49 @@ import java.util.concurrent.Semaphore;
  */
 public class Buffer extends Thread {
 
-    public static final int BUFFER_SIZE = 5;
-    private static int sleepLength, numProducers, numConsumers;
+    private static final int BUFFER_SIZE = 5;
+    private static final int RAND_MAX = 1000;
+
+    private static int sleepLength, numProducers, numConsumers, item;
     private static int[] bufferArray;
+
+    private static Semaphore full, empty, mutex;
+
     private final Producer[] producers;
     private final Consumer[] consumers;
-    private static Semaphore full, empty, mutex;
-    private static final int RAND_MAX = 1000;
-    private static int item;
 
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+
+        full = new Semaphore(0, false);
+        empty = new Semaphore(BUFFER_SIZE, false);
+        mutex = new Semaphore(1, false);
+
+        try {
+            int _sleepLength = Integer.parseInt(args[0]);
+            int _numProducers = Integer.parseInt(args[1]);
+            int _numConsumers = Integer.parseInt(args[2]);
+            // 1. Get command line arguments. Note: Zero-based in Java
+            
+            Buffer buffer = new Buffer(_sleepLength, _numProducers, _numConsumers);
+        } catch (ArrayIndexOutOfBoundsException | NumberFormatException x) {
+            System.out.println("Incorrect usage, requires: 'Buffer int int int'");
+        }
+
+        try {
+            Thread.sleep(sleepLength);
+            /* 5. Sleep */
+
+        } catch (InterruptedException iE) {
+            System.out.println("Woken via interupt");
+        }
+
+        System.exit(0);
+        /* 6. Exit */
+    }
+    
     public Buffer(int sleepLength, int numProducers, int numConsumers) {
         Buffer.sleepLength = sleepLength;
         Buffer.numProducers = numProducers;
@@ -37,38 +71,6 @@ public class Buffer extends Thread {
             consumers[i] = new Consumer(this);
         } /* 4. Create consumer thread(s) */
 
-    }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-
-        full = new Semaphore(0, false);
-        empty = new Semaphore(BUFFER_SIZE, false);
-        mutex = new Semaphore(1, false);
-
-        try {
-            int _sleepLength = Integer.parseInt(args[0]);
-            int _numProducers = Integer.parseInt(args[1]);
-            int _numConsumers = Integer.parseInt(args[2]);
-            // 1. Get command line arguments. Note: Zero-based in Java
-
-            Buffer buffer = new Buffer(_sleepLength, _numProducers, _numConsumers);
-        } catch (ArrayIndexOutOfBoundsException | NumberFormatException x) {
-            System.out.println("Incorrect usage, requires: 'Buffer int int int'");
-        }
-
-        try {
-            Thread.sleep(sleepLength);
-            /* 5. Sleep */
-
-        } catch (InterruptedException iE) {
-            System.out.println("Woken via interupt");
-        }
-
-        System.exit(0);
-        /* 6. Exit */
     }
 
     boolean insert_item(int item) {
