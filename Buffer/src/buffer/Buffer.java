@@ -21,6 +21,7 @@ public class Buffer extends Thread {
     private final Consumer[] consumers;
 
     /**
+     * The Main method.
      * @param args the command line arguments
      */
     public static void main(String[] args) {
