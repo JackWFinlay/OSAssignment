@@ -11,9 +11,12 @@ public class Buffer extends Thread {
 
     public static final int BUFFER_SIZE = 5;
     private static int sleepLength, numProducers, numConsumers;
-    public static int[] bufferArray;
+    private static int[] bufferArray;
     private final Producer[] producers;
     private final Consumer[] consumers;
+    private static Semaphore full, empty, mutex;
+    private static final int RAND_MAX = 1000;
+    private static int item;
 
     public Buffer(int sleepLength, int numProducers, int numConsumers) {
         Buffer.sleepLength = sleepLength;
@@ -41,9 +44,9 @@ public class Buffer extends Thread {
      */
     public static void main(String[] args) {
 
-        Semaphore full = new Semaphore(0, true);
-        Semaphore empty = new Semaphore(BUFFER_SIZE, true);
-        //Mutex 
+        full = new Semaphore(0, false);
+        empty = new Semaphore(BUFFER_SIZE, false);
+        mutex = new Semaphore(1, false);
 
         try {
             int _sleepLength = Integer.parseInt(args[0]);
@@ -70,21 +73,79 @@ public class Buffer extends Thread {
 
     boolean insert_item(int item) {
         boolean success = false;
-        /* insert item into buffer
-         return 0 if successful, otherwise
-         return -1 indicating an error condition */
-        System.out.println("insert");
+
+        try {
+            empty.acquire();
+            mutex.acquire();
+            // Critical Section:
+            bufferArray[full.availablePermits()] = item;
+
+            mutex.release();
+            full.release();
+
+            // Non-Critical:
+            success = true;
+        } catch (InterruptedException ex) {
+            System.out.println("Interupt");
+        }
+
         return success;
     }
 
     boolean remove_item(int item) {
         boolean success = false;
-        /* remove an object from buffer
-         placing it in item
-         return 0 if successful, otherwise
-         return -1 indicating an error condition */
-                System.out.println("remove");
+
+        try {
+            full.acquire();
+            mutex.acquire();
+            // Critical Section:
+            Buffer.item = bufferArray[full.availablePermits()];
+            bufferArray[full.availablePermits()] = 0;
+
+            mutex.release();
+            empty.release();
+
+            // Non-Critical:
+            success = true;
+        } catch (InterruptedException ex) {
+            System.out.println("Interupt");
+        }
+
         return success;
+    }
+
+    public void producer() {
+
+        while (true) {
+            try {
+                Thread.sleep((int) (Math.random() * RAND_MAX));
+            } catch (InterruptedException ex) {
+                System.out.println("Something.");
+            }
+
+            int rand = (int) (Math.random() * RAND_MAX);
+
+            if (!insert_item(rand)) {
+                System.out.println("Report Error Condition - insert fail");
+            } else {
+                System.out.println("Producer produced " + rand);
+            }
+        }
+    }
+
+    public void consumer() {
+        while (true) {
+            try {
+                Thread.sleep((int) (Math.random() * RAND_MAX));
+            } catch (InterruptedException ex) {
+            }
+
+            if (!remove_item(item)) {
+                System.out.println("Report Error Condition - consume fail");
+            } else {
+                System.out.println("Consumer consumed " + item);
+            }
+        }
     }
 
 }
