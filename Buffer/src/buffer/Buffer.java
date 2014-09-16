@@ -42,7 +42,7 @@ public class Buffer extends Thread {
         }
 
         try {
-            Thread.sleep(sleepLength);
+            Thread.sleep(sleepLength*1000);
             /* 5. Sleep */
 
         } catch (InterruptedException iE) {
