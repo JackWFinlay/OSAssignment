@@ -1,6 +1,7 @@
 package buffer;
 
 import java.util.concurrent.Semaphore;
+import sun.awt.Mutex;
 
 /**
  * A Java implementation of the bounded buffer problem.
@@ -16,6 +17,7 @@ public class Buffer extends Thread {
     private static int[] bufferArray;
 
     private static Semaphore full, empty, mutex;
+    //private static Mutex m;
 
     private final Producer[] producers;
     private final Consumer[] consumers;
